@@ -1116,13 +1116,17 @@ public class MainActivity extends Activity {
 							}
 						});
 					layout.addView(AdditionalOptionsBack);
-					setContentView(layout);
+					ScrollView scroll=new ScrollView(this);
+scroll.addView(layout);
+setContentView(scroll);
 				}
 			});
 
 
 		layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
+        int pad = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,16,getResources().getDisplayMetrics());
+        layout.setPadding(pad,pad,pad,pad);
         layout.addView(commandInput);
         layout.addView(saveButton);
 		layout.addView(keyboardSettingsButton);
@@ -1143,7 +1147,9 @@ public class MainActivity extends Activity {
 		} else { 
 			//No password on device. Pass. (Нет пароля на телефоне. Пропустим.)
 			RESULT=true;
-			setContentView(layout);
+			ScrollView scroll=new ScrollView(this);
+scroll.addView(layout);
+setContentView(scroll);
 		}
     }
 
@@ -1154,7 +1160,9 @@ public class MainActivity extends Activity {
 		if (requestCode == 1337) {
 			if (resultCode == RESULT_OK) {			
 				RESULT=true;
-				setContentView(layout);
+				ScrollView scroll=new ScrollView(this);
+scroll.addView(layout);
+setContentView(scroll);
 			} else {
 				finish();
 			}
@@ -1284,42 +1292,4 @@ public class MainActivity extends Activity {
         SharedPreferences prefs = deviceProtectedContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getString(KEY_CUSTOM_COMMAND, "");
     }
-
-    // -------- UI helpers (optimization, no logic change) --------
-    private LinearLayout makeRoot() {
-        ScrollView scroll = new ScrollView(this);
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        int p = dpToPx(16);
-        root.setPadding(p,p,p,p);
-        scroll.addView(root);
-        setContentView(scroll);
-        return root;
-    }
-
-    private Button makeButton(String text){
-        Button b = new Button(this);
-        b.setText(text);
-        return b;
-    }
-
-    private TextView makeText(String text){
-        TextView t = new TextView(this);
-        t.setText(text);
-        return t;
-    }
-
-    private LinearLayout makeSection(String title){
-        LinearLayout section = new LinearLayout(this);
-        section.setOrientation(LinearLayout.VERTICAL);
-
-        TextView header = new TextView(this);
-        header.setText(title);
-        header.setTextSize(18);
-        header.setPadding(0,dpToPx(12),0,dpToPx(6));
-
-        section.addView(header);
-        return section;
-    }
-
-			}
+}
