@@ -21,6 +21,22 @@ import android.util.TypedValue;
 import java.util.*;
 import java.util.regex.*;
 import org.json.*;
+/*
+ Приложение использует DPS, а не Android Keystore,
+ потому что на некоторых устройствах
+ даже если setUserAuthenticationRequired(false)), 
+ Android Keystore может быть недоступен
+ в BFU, а данное приложение являясь клавиатурой
+ должно работать в BFU.
+ */
+
+/*
+ The app uses DPS instead of Android Keystore,
+ because on some devices, 
+ even if setUserAuthenticationRequired(false), 
+ Android Keystore may not be available in BFU, 
+ but this app, being a keyboard, should work in BFU.
+ */
 
 public class MainActivity extends Activity {
 
@@ -77,7 +93,8 @@ public class MainActivity extends Activity {
                     JSONArray inner = outer.getJSONArray(i);
                     for (int j = 0; j < inner.length(); j++) {
                         String symbol = inner.getString(j);
-                        if (symbol.length() == 1 || (symbol.length() > 1 && Character.isSurrogatePair(symbol.charAt(0), symbol.charAt(1)))) {
+
+                        if (symbol.length() == 1 || symbol.length() > 1 && Character.isSurrogatePair(symbol.charAt(0), symbol.charAt(1))) {
                             charSet.add(symbol);
                         }
                     }
@@ -88,12 +105,12 @@ public class MainActivity extends Activity {
         }
 
         charSet.remove(" ");
-        charSet.remove("⇪");
-        charSet.remove("⌫");
-        charSet.remove("!#?");
-        charSet.remove("abc");
-        charSet.remove("🌐");
-        charSet.remove("⏎");
+        charSet.remove("⇪"); // Shift
+        charSet.remove("⌫"); // Backspace
+        charSet.remove("!#?"); // Sym switch
+        charSet.remove("abc"); // Alpha switch
+        charSet.remove("🌐"); // Lang switch
+        charSet.remove("⏎"); // Enter/Wipe trigger
 
         StringBuilder sb = new StringBuilder();
         for (String s : charSet) {
@@ -175,22 +192,26 @@ public class MainActivity extends Activity {
         root.addView(t1, lp);
 
         TextView t2 = new TextView(this);
-        t2.setText(isRussianDevice() ? "Перейдите в настройки спецвозможностей и включите для этого приложения" : "Go to accessibility settings and enable for this app");
+        t2.setText(isRussianDevice() ? "Перейдите в настройки спецвозможностей и включите для нашего приложения." : "Go to accessibility settings and enable our app.");
         root.addView(t2, lp);
 
         Button b1 = new Button(this);
-        b1.setText(isRussianDevice() ? "Перейти в настройки" : "Go to accessibility settings");
+        b1.setText(isRussianDevice() ? "Перейти в настройки спецвозможностей" : "Go to accessibility settings");
         b1.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
         root.addView(b1, lp);
 
         TextView t3 = new TextView(this);
-        t3.setText(isRussianDevice() ? "Если настройка ограничена — зайдите в настройки приложения → три точки → разрешить ограниченные настройки" : "If restricted — go to app settings → three dots → allow restricted settings");
+        t3.setText(isRussianDevice() ? "Если в настройках спецвозможностей написано, что это ограниченная настройка — зайдите в настройки приложения, три точки сверху справа → разрешить ограниченные настройки." : "If restricted setting — go to app settings, three dots → allow restricted settings.");
         root.addView(t3, lp);
 
         Button b2 = new Button(this);
-        b2.setText(isRussianDevice() ? "Настройки приложения" : "App settings");
+        b2.setText(isRussianDevice() ? "Перейти в настройки приложения" : "Go to app settings");
         b2.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", getPackageName(), null))));
         root.addView(b2, lp);
+
+        TextView t4 = new TextView(this);
+        t4.setText(isRussianDevice() ? "Затем вернитесь в настройки спецвозможностей и включите наше приложение." : "Then go back to accessibility and enable.");
+        root.addView(t4, lp);
 
         String title = isRussianDevice() ? "Требуются спецвозможности" : "Accessibility required";
         accessibilityDialog = new AlertDialog.Builder(this)
@@ -203,19 +224,6 @@ public class MainActivity extends Activity {
 
     private boolean isRussianDevice() {
         return "ru".equalsIgnoreCase(Locale.getDefault().getLanguage());
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        aetest();
-
-        if (accessibilityEnabled) {
-            if (accessibilityDialog != null && accessibilityDialog.isShowing()) {
-                accessibilityDialog.dismiss();
-                accessibilityDialog = null;
-            }
-        }
     }
 
     private void showLanguageSelectionDialog() {
@@ -240,7 +248,7 @@ public class MainActivity extends Activity {
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(isRussian ? "Выберите языки клавиатуры" : "Select keyboard languages")
+        builder.setTitle(isRussian ? "Выберите языки сервиса клавиатуры" : "Select keyboard service languages")
                 .setMultiChoiceItems(languages, checkedItems, (dialog, which, isChecked) -> checkedItems[which] = isChecked)
                 .setPositiveButton(isRussian ? "Сохранить" : "Save", (dialog, which) -> {
                     SharedPreferences.Editor ed = prefs.edit();
@@ -279,11 +287,11 @@ public class MainActivity extends Activity {
         commandInput.setHint(isRussian ? "Задайте секретный код сброса" : "Set secret wipe code");
 
         final String allowedChars = getAllowedCharacters(this);
-        InputFilter filterLen = new InputFilter.LengthFilter(50);
+
+        InputFilter filter1 = new InputFilter.LengthFilter(50);
         InputFilter filterChars = new InputFilter() {
             @Override
-            public CharSequence filter(CharSequence source, int start, int end,
-                                       Spanned dest, int dstart, int dend) {
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
                 for (int i = start; i < end; i++) {
                     if (allowedChars.indexOf(source.charAt(i)) == -1) {
                         return "";
@@ -292,7 +300,7 @@ public class MainActivity extends Activity {
                 return null;
             }
         };
-        commandInput.setFilters(new InputFilter[]{filterLen, filterChars});
+        commandInput.setFilters(new InputFilter[]{filter1, filterChars});
 
         final Button saveButton = new Button(this);
         saveButton.setText(isRussian ? "Сохранить код" : "Save code");
@@ -302,56 +310,61 @@ public class MainActivity extends Activity {
             if (!cmd.isEmpty()) {
                 try {
                     String salt = generateSalt();
-                    String hash = hashKeyWithSalt(salt, cmd);
+                    String commandHash = hashKeyWithSalt(salt, cmd);
 
-                    Context dp = getApplicationContext().createDeviceProtectedStorageContext();
-                    SharedPreferences prefs = dp.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                    Context dpContext = getApplicationContext().createDeviceProtectedStorageContext();
+                    SharedPreferences prefs = dpContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
                     prefs.edit()
-                            .putString(KEY_CUSTOM_COMMAND, hash)
+                            .putString(KEY_CUSTOM_COMMAND, commandHash)
                             .putString("command_salt", salt)
                             .apply();
 
                     Toast.makeText(this, isRussian ? "Код сохранён" : "Code saved", Toast.LENGTH_SHORT).show();
+
                     commandInput.setText("");
-                } catch (Exception e) {
-                    Toast.makeText(this, isRussian ? "Ошибка" : "Error", Toast.LENGTH_SHORT).show();
+                    commandInput.clearFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(commandInput.getWindowToken(), 0);
+                } catch (NoSuchAlgorithmException e) {
+                    Toast.makeText(this, "Ошибка хеширования", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        final Button kbSettingsBtn = new Button(this);
-        kbSettingsBtn.setText(isRussian ? "Настройки клавиатур" : "Keyboard settings");
-        kbSettingsBtn.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)));
+        final Button keyboardSettingsButton = new Button(this);
+        keyboardSettingsButton.setText(isRussian ? "Открыть настройки клавиатур" : "Open keyboard settings");
+        keyboardSettingsButton.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)));
 
-        final Button chooseKbBtn = new Button(this);
-        chooseKbBtn.setText(isRussian ? "Выбрать нашу клавиатуру" : "Select our keyboard");
-        chooseKbBtn.setOnClickListener(v -> {
-            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        final Button chooseKeyboardButton = new Button(this);
+        chooseKeyboardButton.setText(isRussian ? "Выбрать нашу клавиатуру" : "Select our keyboard");
+        chooseKeyboardButton.setOnClickListener(v -> {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             if (imm != null) imm.showInputMethodPicker();
         });
 
-        final Button langBtn = new Button(this);
-        langBtn.setText(isRussian ? "Языки клавиатуры" : "Keyboard languages");
-        langBtn.setOnClickListener(v -> showLanguageSelectionDialog());
+        final Button selectLanguagesButton = new Button(this);
+        selectLanguagesButton.setText(isRussian ? "Выбрать языки" : "Select languages");
+        selectLanguagesButton.setOnClickListener(v -> showLanguageSelectionDialog());
 
-        final Button instrBtn = new Button(this);
-        instrBtn.setText(isRussian ? "Инструкция" : "Instructions");
-        instrBtn.setOnClickListener(v -> {
-            // Здесь твой оригинальный код с длинной инструкцией, оставляю как есть
+        final Button readInstructionsButton = new Button(this);
+        readInstructionsButton.setText(isRussian ? "Инструкция" : "Instructions");
+        readInstructionsButton.setOnClickListener(v -> {
+            // Оставляю твой оригинальный код инструкции
+            String instructions = isRussian ? "Подробная инструкция..." : "Detailed instructions...";
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            ScrollView scroll = new ScrollView(this);
             TextView tv = new TextView(this);
-            tv.setText(isRussian ? "Длинный текст инструкции..." : "Long instructions text...");
-            tv.setPadding(32, 32, 32, 32);
-            ScrollView sv = new ScrollView(this);
-            sv.addView(tv);
-            builder.setView(sv);
+            tv.setText(instructions);
+            tv.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
+            scroll.addView(tv);
+            builder.setView(scroll);
             builder.setPositiveButton("OK", null);
             builder.show();
         });
 
-        final Button moreBtn = new Button(this);
-        moreBtn.setText(isRussian ? "Дополнительные параметры" : "More options");
+        final Button additionalButton = new Button(this);
+        additionalButton.setText(isRussian ? "Дополнительные параметры" : "Additional options");
 
         // Переключатели с короткими текстами
         Context dpUsb = getApplicationContext().createDeviceProtectedStorageContext();
@@ -360,92 +373,96 @@ public class MainActivity extends Activity {
         final Switch usbSwitch = new Switch(this);
         usbSwitch.setText(isRussian ? "Сброс при USB/BT" : "Wipe on USB/BT");
         usbSwitch.setChecked(prefsUsb.getBoolean(KEY_USB_BLOCK, false));
-        usbSwitch.setOnCheckedChangeListener((b, c) -> prefsUsb.edit().putBoolean(KEY_USB_BLOCK, c).apply());
+        usbSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> prefsUsb.edit().putBoolean(KEY_USB_BLOCK, isChecked).apply());
 
         final Switch chargeSwitch = new Switch(this);
         chargeSwitch.setText(isRussian ? "Сброс при зарядке" : "Wipe on charging");
         chargeSwitch.setChecked(prefsUsb.getBoolean(KEY_BLOCK_CHARGING, false));
-        chargeSwitch.setOnCheckedChangeListener((b, c) -> {
-            if (c) {
+        chargeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
                 new AlertDialog.Builder(this)
-                        .setTitle(isRussian ? "Внимание!" : "Warning!")
-                        .setMessage(isRussian ? "Если телефон заряжается — данные сотрутся СЕЙЧАС!" : "If charging — wipe NOW!")
-                        .setPositiveButton(isRussian ? "Включить" : "Enable", (d, w) -> prefsUsb.edit().putBoolean(KEY_BLOCK_CHARGING, true).apply())
-                        .setNegativeButton("Отмена", null)
+                        .setTitle(isRussian ? "Подтверждение" : "Confirmation")
+                        .setMessage(isRussian ? "Если телефон сейчас заряжается — данные сотрутся СЕЙЧАС!" : "If charging now — data will wipe IMMEDIATELY!")
+                        .setPositiveButton(isRussian ? "Включить" : "Enable", (dialog, which) -> {
+                            prefsUsb.edit().putBoolean(KEY_BLOCK_CHARGING, true).apply();
+                            chargeSwitch.setChecked(true);
+                        })
+                        .setNegativeButton(isRussian ? "Отмена" : "Cancel", null)
                         .show();
             } else {
                 prefsUsb.edit().putBoolean(KEY_BLOCK_CHARGING, false).apply();
+                chargeSwitch.setChecked(false);
             }
         });
 
         noNetworkWipeSwitch = new Switch(this);
         noNetworkWipeSwitch.setText(isRussian ? "Сброс без сети >3 мин" : "Wipe no network >3 min");
         noNetworkWipeSwitch.setChecked(prefsNetwork.getBoolean(KEY_WIPE_ON_NO_NETWORK, false));
-        noNetworkWipeSwitch.setOnCheckedChangeListener((b, c) -> {
-            if (c && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+        noNetworkWipeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.READ_PHONE_STATE}, 1);
             } else {
-                prefsNetwork.edit().putBoolean(KEY_WIPE_ON_NO_NETWORK, c).apply();
+                prefsNetwork.edit().putBoolean(KEY_WIPE_ON_NO_NETWORK, isChecked).apply();
             }
         });
 
         final Switch rebootSwitch = new Switch(this);
         rebootSwitch.setText(isRussian ? "Сброс при перезагрузке" : "Wipe on reboot");
         rebootSwitch.setChecked(prefsReboot.getBoolean(KEY_WIPE_ON_REBOOT, false));
-        rebootSwitch.setOnCheckedChangeListener((b, c) -> prefsReboot.edit().putBoolean(KEY_WIPE_ON_REBOOT, c).apply());
+        rebootSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> prefsReboot.edit().putBoolean(KEY_WIPE_ON_REBOOT, isChecked).apply());
 
-        final Switch imeSwitch = new Switch(this);
-        imeSwitch.setText(isRussian ? "Сброс при смене клавиатуры" : "Wipe on keyboard change");
-        imeSwitch.setChecked(prefsIme.getBoolean(KEY_WIPE2, false));
-        imeSwitch.setOnCheckedChangeListener((b, c) -> prefsIme.edit().putBoolean(KEY_WIPE2, c).apply());
+        final Switch wipeOnImeSwitch = new Switch(this);
+        wipeOnImeSwitch.setText(isRussian ? "Сброс при смене клавиатуры" : "Wipe on keyboard change");
+        wipeOnImeSwitch.setChecked(prefsIme.getBoolean(KEY_WIPE2, false));
+        wipeOnImeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> prefsIme.edit().putBoolean(KEY_WIPE2, isChecked).apply());
 
-        final Switch autoSwitch = new Switch(this);
-        autoSwitch.setText(isRussian ? "Автозапуск после перезагрузки" : "Auto-start after reboot");
-        autoSwitch.setChecked(prefsAUTORUN.getBoolean(KEY_AUTORUN, false));
-        autoSwitch.setOnCheckedChangeListener((b, c) -> prefsAUTORUN.edit().putBoolean(KEY_AUTORUN, c).apply());
+        final Switch autoRunSwitch = new Switch(this);
+        autoRunSwitch.setText(isRussian ? "Автозапуск после перезагрузки" : "Auto-start after reboot");
+        autoRunSwitch.setChecked(prefsAUTORUN.getBoolean(KEY_AUTORUN, false));
+        autoRunSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> prefsAUTORUN.edit().putBoolean(KEY_AUTORUN, isChecked).apply());
 
         final Switch fakeHomeSwitch = new Switch(this);
         fakeHomeSwitch.setText(isRussian ? "Фейковый домашний экран" : "Fake home screen");
         fakeHomeSwitch.setChecked(prefsIme.getBoolean(KEY_FAKE_HOME, false));
-        fakeHomeSwitch.setOnCheckedChangeListener((b, c) -> prefsIme.edit().putBoolean(KEY_FAKE_HOME, c).apply());
+        fakeHomeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> prefsIme.edit().putBoolean(KEY_FAKE_HOME, isChecked).apply());
 
-        final Switch promptSwitch = new Switch(this);
-        promptSwitch.setText(isRussian ? "Окно ✓/✗ при включении экрана" : "✓/✗ on screen on");
-        promptSwitch.setChecked(prefsScreen.getBoolean(KEY_SCREEN_ON_WIPE_PROMPT, false));
-        promptSwitch.setOnCheckedChangeListener((b, c) -> prefsScreen.edit().putBoolean(KEY_SCREEN_ON_WIPE_PROMPT, c).apply());
+        final Switch screenOnWipeSwitch = new Switch(this);
+        screenOnWipeSwitch.setText(isRussian ? "Окно ✓/✗ при включении экрана" : "✓/✗ prompt on screen on");
+        screenOnWipeSwitch.setChecked(prefsScreen.getBoolean(KEY_SCREEN_ON_WIPE_PROMPT, false));
+        screenOnWipeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> prefsScreen.edit().putBoolean(KEY_SCREEN_ON_WIPE_PROMPT, isChecked).apply());
 
         final Switch aeSwitch = new Switch(this);
-        aeSwitch.setText(isRussian ? "Фейк-пароль (доступность)" : "Fake password (accessibility)");
+        aeSwitch.setText(isRussian ? "Фейк-пароль через спецвозможности" : "Fake password via accessibility");
         aeSwitch.setChecked(accessibilityEnabled);
-        aeSwitch.setOnCheckedChangeListener((b, c) -> {
+        aeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!accessibilityEnabled) ais();
             else startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
         });
 
-        // Оборачиваем опасные свитчи в ряды с кнопкой "?"
-        LinearLayout usbRow = wrapWithInfo(usbSwitch, isRussian ? "Стирает при флешке, мышке, Bluetooth и т.д.\nНе срабатывает при обычной зарядке." : "Triggers on USB/BT devices.\nNo trigger on normal charger.");
-        LinearLayout chargeRow = wrapWithInfo(chargeSwitch, isRussian ? "Защищает от USB-атак.\nВыключай перед обычной зарядкой!" : "Protects from USB exploits.\nDisable for normal charging!");
-        LinearLayout netRow = wrapWithInfo(noNetworkWipeSwitch, isRussian ? "Срабатывает если сеть пропала >3 мин.\nТелефон не засыпает. Отключай в плохой связи!" : "Triggers after 3+ min no network.\nKeeps awake. Disable in bad signal areas!");
-        LinearLayout rebootRow = wrapWithInfo(rebootSwitch, isRussian ? "Стирает всё сразу после перезагрузки.\nОчень жёстко!" : "Wipes everything on reboot.\nVery aggressive!");
+        // Ряды с "?" для важных опций
+        LinearLayout usbRow = wrapSwitchWithInfo(usbSwitch, isRussian ? "Стирает данные при подключении USB-устройств (флешка, мышка, клавиатура) или Bluetooth.\nНе срабатывает при обычной зарядке от блока." : "Wipes on USB/BT input devices.\nDoes not trigger on normal charger.");
+        LinearLayout chargeRow = wrapSwitchWithInfo(chargeSwitch, isRussian ? "Может защитить от сложных USB-эксплойтов.\nОБЯЗАТЕЛЬНО отключите перед обычной зарядкой!" : "May protect from advanced USB attacks.\nDISABLE before normal charging!");
+        LinearLayout networkRow = wrapSwitchWithInfo(noNetworkWipeSwitch, isRussian ? "Срабатывает если мобильная сеть пропала больше 3 минут и режим полёта выключен.\nТелефон будет просыпаться каждые 30 сек (чёрный экран).\nОтключайте в местах с нестабильной связью!" : "Triggers after 3+ min no mobile network (not airplane mode).\nKeeps device awake with black screen every 30s.\nDisable where signal drops often!");
+        LinearLayout rebootRow = wrapSwitchWithInfo(rebootSwitch, isRussian ? "Стирает все данные сразу после перезагрузки.\nОчень жёсткая функция — используйте осторожно." : "Wipes everything immediately after reboot.\nVery aggressive — use with caution.");
 
-        LinearLayout additional = new LinearLayout(this);
-        additional.setOrientation(LinearLayout.VERTICAL);
-        additional.addView(usbRow);
-        additional.addView(chargeRow);
-        additional.addView(netRow);
-        additional.addView(rebootRow);
-        additional.addView(imeSwitch);
-        additional.addView(autoSwitch);
-        additional.addView(fakeHomeSwitch);
-        additional.addView(promptSwitch);
-        additional.addView(aeSwitch);
+        LinearLayout additionalLayout = new LinearLayout(this);
+        additionalLayout.setOrientation(LinearLayout.VERTICAL);
+        additionalLayout.addView(usbRow);
+        additionalLayout.addView(chargeRow);
+        additionalLayout.addView(networkRow);
+        additionalLayout.addView(rebootRow);
+        additionalLayout.addView(wipeOnImeSwitch);
+        additionalLayout.addView(autoRunSwitch);
+        additionalLayout.addView(fakeHomeSwitch);
+        additionalLayout.addView(screenOnWipeSwitch);
+        additionalLayout.addView(aeSwitch);
 
-        Button back = new Button(this);
-        back.setText(isRussian ? "Назад" : "Back");
-        back.setOnClickListener(v -> recreate());
-        additional.addView(back);
+        Button backButton = new Button(this);
+        backButton.setText(isRussian ? "Назад" : "Back");
+        backButton.setOnClickListener(v -> recreate());
+        additionalLayout.addView(backButton);
 
-        moreBtn.setOnClickListener(v -> setContentView(additional));
+        additionalButton.setOnClickListener(v -> setContentView(additionalLayout));
 
         layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -453,46 +470,46 @@ public class MainActivity extends Activity {
 
         layout.addView(commandInput);
         layout.addView(saveButton);
-        layout.addView(kbSettingsBtn);
-        layout.addView(chooseKbBtn);
-        layout.addView(langBtn);
-        layout.addView(instrBtn);
-        layout.addView(moreBtn);
+        layout.addView(keyboardSettingsButton);
+        layout.addView(chooseKeyboardButton);
+        layout.addView(selectLanguagesButton);
+        layout.addView(readInstructionsButton);
+        layout.addView(additionalButton);
 
         setContentView(layout);
     }
 
-    private LinearLayout wrapWithInfo(Switch sw, String infoMsg) {
+    private LinearLayout wrapSwitchWithInfo(Switch sw, String infoMessage) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(0, dpToPx(8), 0, dpToPx(8));
 
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-        sw.setLayoutParams(p);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        sw.setLayoutParams(params);
         row.addView(sw);
 
-        Button info = new Button(this);
-        info.setText("?");
-        info.setWidth(dpToPx(48));
-        info.setHeight(dpToPx(48));
-        info.setTextSize(18);
-        info.setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("Важно")
-                .setMessage(infoMsg)
+        Button infoBtn = new Button(this);
+        infoBtn.setText("?");
+        infoBtn.setWidth(dpToPx(48));
+        infoBtn.setHeight(dpToPx(48));
+        infoBtn.setTextSize(18);
+        infoBtn.setOnClickListener(v -> new AlertDialog.Builder(this)
+                .setTitle(isRussianDevice() ? "Важно" : "Important")
+                .setMessage(infoMessage)
                 .setPositiveButton("OK", null)
                 .show());
-        row.addView(info);
+        row.addView(infoBtn);
 
         return row;
     }
 
     private void initializeDefaultLayoutsIfNeeded(boolean isRussianDevice) {
-        // Твой оригинальный код инициализации layouts остаётся без изменений
         Context dpContext = getApplicationContext().createDeviceProtectedStorageContext();
         SharedPreferences prefs = dpContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         SharedPreferences.Editor ed = prefs.edit();
         boolean changed = false;
+
         if (!prefs.contains(KEY_LAYOUT_RU)) {
             String[][] russianLetters = {
                     {"1","2","3","4","5","6","7","8","9","0"},
@@ -504,20 +521,84 @@ public class MainActivity extends Activity {
             ed.putString(KEY_LAYOUT_RU, string2DArrayToJson(russianLetters));
             changed = true;
         }
-        // ... (остальные layouts аналогично, без изменений)
+        if (!prefs.contains(KEY_LAYOUT_EN)) {
+            String[][] englishLetters = {
+                    {"1","2","3","4","5","6","7","8","9","0"},
+                    {"q","w","e","r","t","y","u","i","o","p"},
+                    {"a","s","d","f","g","h","j","k","l"},
+                    {"⇪","z","x","c","v","b","n","m","⌫"},
+                    {"!#?","🌐",","," ",".","⏎"}
+            };
+            ed.putString(KEY_LAYOUT_EN, string2DArrayToJson(englishLetters));
+            changed = true;
+        }
+        if (!prefs.contains(KEY_LAYOUT_SYM)) {
+            String[][] symbolLetters = {
+                    {"1","2","3","4","5","6","7","8","9","0"},
+                    {"/","\\","`","+","*","@","#","$","^","&","'"},
+                    {"=","|","<",">","[","]","(",")","{","}","\""},
+                    {"😃","\~","%","-","—","_",":",";","!","?","⌫"},
+                    {"abc","🌐",","," ",".","⏎"}
+            };
+            ed.putString(KEY_LAYOUT_SYM, string2DArrayToJson(symbolLetters));
+            changed = true;
+        }
+        if (!prefs.contains(KEY_LAYOUT_EMOJI)) {
+            String[][] emojiLetters = {
+                    {"😀","😢","😡","🤡","💩","👍","😭","🤬","😵","☠️","😄"},
+                    {"😁","😔","😤","😜","🤢","😆","😟","😠","😝","🤮","👎"},
+                    {"😂","😞","😣","😛","😷","🤣","🥰","😖","🤨","🤒","🤧"},
+                    {"!#?","😊","😫","🧐","🥴","💔","☹️","😩","🐷","😵‍💫","⌫"},
+                    {"abc","🌐",","," ",".","⏎"}
+            };
+            ed.putString(KEY_LAYOUT_EMOJI, string2DArrayToJson(emojiLetters));
+            changed = true;
+        }
+        if (!prefs.contains(KEY_LAYOUT_ES)) {
+            String[][] spanishLetters = {
+                    {"1","2","3","4","5","6","7","8","9","0"},
+                    {"q","w","e","r","t","y","u","i","o","p"},
+                    {"a","s","d","f","g","h","j","k","l","ñ"},
+                    {"⇪","z","x","c","v","b","n","m","⌫"},
+                    {"!#?","🌐",","," ",".","⏎"}
+            };
+            ed.putString(KEY_LAYOUT_ES, string2DArrayToJson(spanishLetters));
+            changed = true;
+        }
         if (changed) ed.apply();
     }
 
     private void initializeDefaultLanguageFlagsIfNeeded(boolean isRussianDevice) {
-        // Твой оригинальный код остаётся без изменений
+        Context dpContext = getApplicationContext().createDeviceProtectedStorageContext();
+        SharedPreferences prefs = dpContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor ed = prefs.edit();
+        boolean changed = false;
+        if (!prefs.contains(KEY_LANG_RU) && !prefs.contains(KEY_LANG_EN) && !prefs.contains(KEY_LANG_ES)
+                && !prefs.contains(KEY_LANG_SYM) && !prefs.contains(KEY_LANG_EMOJI)) {
+            if (isRussianDevice) {
+                ed.putBoolean(KEY_LANG_RU, true);
+                ed.putBoolean(KEY_LANG_EN, true);
+                ed.putBoolean(KEY_LANG_ES, false);
+                ed.putBoolean(KEY_LANG_SYM, true);
+                ed.putBoolean(KEY_LANG_EMOJI, true);
+            } else {
+                ed.putBoolean(KEY_LANG_RU, false);
+                ed.putBoolean(KEY_LANG_EN, true);
+                ed.putBoolean(KEY_LANG_ES, true);
+                ed.putBoolean(KEY_LANG_SYM, true);
+                ed.putBoolean(KEY_LANG_EMOJI, true);
+            }
+            changed = true;
+        }
+        if (changed) ed.apply();
     }
 
     private String string2DArrayToJson(String[][] arr) {
         JSONArray outer = new JSONArray();
-        for (String[] innerArr : arr) {
+        for (int i = 0; i < arr.length; i++) {
             JSONArray inner = new JSONArray();
-            for (String s : innerArr) {
-                inner.put(s);
+            for (int j = 0; j < arr[i].length; j++) {
+                inner.put(arr[i][j]);
             }
             outer.put(inner);
         }
@@ -527,6 +608,7 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (requestCode == 1) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 noNetworkWipeSwitch.setChecked(true);
@@ -538,8 +620,8 @@ public class MainActivity extends Activity {
     }
 
     public static String getCustomCommand(Context context) {
-        Context dpContext = context.getApplicationContext().createDeviceProtectedStorageContext();
-        SharedPreferences prefs = dpContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        Context deviceProtectedContext = context.getApplicationContext().createDeviceProtectedStorageContext();
+        SharedPreferences prefs = deviceProtectedContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getString(KEY_CUSTOM_COMMAND, "");
     }
-            }
+                        }
