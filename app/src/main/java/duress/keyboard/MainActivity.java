@@ -925,13 +925,11 @@ public class MainActivity extends Activity {
                         main = true;
                         layout.removeAllViews(); 
                         layout.setOrientation(LinearLayout.VERTICAL);
-                        layout.addView(commandInput);
-                        layout.addView(saveButton);
-                        layout.addView(keyboardSettingsButton);
-                        layout.addView(chooseKeyboardButton);
-                        layout.addView(selectLanguagesButton);
-                        layout.addView(readInstructionsButton);
-                        layout.addView(AdditionalOptions);
+                        
+                        // ВОТ ЗДЕСЬ НОВЫЙ ДИЗАЙН ГЛАВНОГО ЭКРАНА
+                        addMainScreenViews(layout, commandInput, saveButton, 
+                            keyboardSettingsButton, chooseKeyboardButton, 
+                            selectLanguagesButton, readInstructionsButton, AdditionalOptions);
                     }
                 });
                 layout.addView(AdditionalOptionsBack);
@@ -941,13 +939,11 @@ public class MainActivity extends Activity {
 
         layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.addView(commandInput);
-        layout.addView(saveButton);
-        layout.addView(keyboardSettingsButton);
-        layout.addView(chooseKeyboardButton);
-        layout.addView(selectLanguagesButton);
-        layout.addView(readInstructionsButton);
-        layout.addView(AdditionalOptions);
+        
+        // ВОТ ЗДЕСЬ НОВЫЙ ДИЗАЙН ГЛАВНОГО ЭКРАНА
+        addMainScreenViews(layout, commandInput, saveButton, 
+            keyboardSettingsButton, chooseKeyboardButton, 
+            selectLanguagesButton, readInstructionsButton, AdditionalOptions);
 
         KeyguardManager keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
 
@@ -960,6 +956,111 @@ public class MainActivity extends Activity {
             RESULT = true;
             setContentView(layout);
         }
+    }
+
+    // НОВЫЙ МЕТОД ДЛЯ СОЗДАНИЯ ГЛАВНОГО ЭКРАНА
+    private void addMainScreenViews(LinearLayout layout, EditText commandInput, 
+                                    Button saveButton, Button keyboardSettingsButton,
+                                    Button chooseKeyboardButton, Button selectLanguagesButton,
+                                    Button readInstructionsButton, Button additionalOptions) {
+        
+        // Заголовок раздела сброса
+        TextView wipeSection = new TextView(this);
+        if (isRussianDevice) {
+            wipeSection.setText("⚙️ НАСТРОЙКА СБРОСА ДАННЫХ");
+        } else {
+            wipeSection.setText("⚙️ WIPE DATA SETUP");
+        }
+        wipeSection.setTextSize(18);
+        wipeSection.setTypeface(null, Typeface.BOLD);
+        wipeSection.setTextColor(Color.parseColor("#333333"));
+        wipeSection.setPadding(0, 16, 0, 8);
+        layout.addView(wipeSection);
+
+        // Поле ввода
+        if (isRussianDevice) {
+            commandInput.setHint("Введите секретный код");
+        } else {
+            commandInput.setHint("Enter secret code");
+        }
+        layout.addView(commandInput);
+
+        // Кнопка сохранения
+        if (isRussianDevice) {
+            saveButton.setText("💾 Сохранить код");
+        } else {
+            saveButton.setText("💾 Save code");
+        }
+        layout.addView(saveButton);
+
+        // Заголовок раздела клавиатуры
+        TextView keyboardSection = new TextView(this);
+        if (isRussianDevice) {
+            keyboardSection.setText("⌨️ КЛАВИАТУРА");
+        } else {
+            keyboardSection.setText("⌨️ KEYBOARD");
+        }
+        keyboardSection.setTextSize(18);
+        keyboardSection.setTypeface(null, Typeface.BOLD);
+        keyboardSection.setTextColor(Color.parseColor("#333333"));
+        keyboardSection.setPadding(0, 24, 0, 8);
+        layout.addView(keyboardSection);
+
+        // Кнопки клавиатуры
+        if (isRussianDevice) {
+            keyboardSettingsButton.setText("└── Включить в системе");
+            chooseKeyboardButton.setText("└── Сделать основной");
+            selectLanguagesButton.setText("└── Выбрать язык");
+        } else {
+            keyboardSettingsButton.setText("└── Enable in system");
+            chooseKeyboardButton.setText("└── Set as default");
+            selectLanguagesButton.setText("└── Select language");
+        }
+        layout.addView(keyboardSettingsButton);
+        layout.addView(chooseKeyboardButton);
+        layout.addView(selectLanguagesButton);
+
+        // Заголовок раздела инструкции
+        TextView instructionsSection = new TextView(this);
+        if (isRussianDevice) {
+            instructionsSection.setText("📖 ИНСТРУКЦИЯ");
+        } else {
+            instructionsSection.setText("📖 INSTRUCTIONS");
+        }
+        instructionsSection.setTextSize(18);
+        instructionsSection.setTypeface(null, Typeface.BOLD);
+        instructionsSection.setTextColor(Color.parseColor("#333333"));
+        instructionsSection.setPadding(0, 24, 0, 8);
+        layout.addView(instructionsSection);
+
+        // Кнопка инструкции
+        if (isRussianDevice) {
+            readInstructionsButton.setText("└── Как это работает");
+        } else {
+            readInstructionsButton.setText("└── How it works");
+        }
+        layout.addView(readInstructionsButton);
+
+        // Заголовок раздела дополнительно
+        TextView advancedSection = new TextView(this);
+        if (isRussianDevice) {
+            advancedSection.setText("⚡ ДОПОЛНИТЕЛЬНО");
+        } else {
+            advancedSection.setText("⚡ ADVANCED");
+        }
+        advancedSection.setTextSize(18);
+        advancedSection.setTypeface(null, Typeface.BOLD);
+        advancedSection.setTextColor(Color.parseColor("#333333"));
+        advancedSection.setPadding(0, 24, 0, 8);
+        layout.addView(advancedSection);
+
+        // Кнопка дополнительных опций
+        if (isRussianDevice) {
+            additionalOptions.setText("└── Скрытые настройки");
+        } else {
+            additionalOptions.setText("└── Hidden settings");
+        }
+        layout.addView(additionalOptions);
     }
 
     @Override
@@ -1095,4 +1196,4 @@ public class MainActivity extends Activity {
         SharedPreferences prefs = deviceProtectedContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getString(KEY_CUSTOM_COMMAND, "");
     }
-								}
+			}
