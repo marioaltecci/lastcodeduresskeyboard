@@ -1116,17 +1116,13 @@ public class MainActivity extends Activity {
 							}
 						});
 					layout.addView(AdditionalOptionsBack);
-					ScrollView scroll=new ScrollView(this);
-scroll.addView(layout);
-setContentView(scroll);
+					setContentView(layout);
 				}
 			});
 
 
 		layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        int pad = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,16,getResources().getDisplayMetrics());
-        layout.setPadding(pad,pad,pad,pad);
         layout.addView(commandInput);
         layout.addView(saveButton);
 		layout.addView(keyboardSettingsButton);
@@ -1147,9 +1143,7 @@ setContentView(scroll);
 		} else { 
 			//No password on device. Pass. (Нет пароля на телефоне. Пропустим.)
 			RESULT=true;
-			ScrollView scroll=new ScrollView(this);
-scroll.addView(layout);
-setContentView(scroll);
+			setContentView(layout);
 		}
     }
 
@@ -1160,9 +1154,7 @@ setContentView(scroll);
 		if (requestCode == 1337) {
 			if (resultCode == RESULT_OK) {			
 				RESULT=true;
-				ScrollView scroll=new ScrollView(this);
-scroll.addView(layout);
-setContentView(scroll);
+				setContentView(layout);
 			} else {
 				finish();
 			}
