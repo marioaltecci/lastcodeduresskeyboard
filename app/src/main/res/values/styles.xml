@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="@android:style/Theme.Holo.Light">
-	</style>
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Главные цвета -->
+        <item name="colorPrimary">#6200EE</item>      <!-- Фиолетовый (как у Google) -->
+        <item name="colorPrimaryVariant">#3700B3</item> <!-- Темнее -->
+        <item name="colorOnPrimary">#FFFFFF</item>     <!-- Белый текст на фиолетовом -->
+        
+        <item name="colorSecondary">#03DAC6</item>     <!-- Бирюзовый -->
+        <item name="colorSecondaryVariant">#018786</item> <!-- Темно-бирюзовый -->
+        <item name="colorOnSecondary">#000000</item>    <!-- Черный текст -->
+        
+        <!-- Фон -->
+        <item name="android:colorBackground">#F5F5F5</item> <!-- Светло-серый -->
+        
+        <!-- Стили кнопок -->
+        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button</item>
+        
+        <!-- Скругление углов -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.MaterialComponents.SmallComponent</item>
+    </style>
+
+    <!-- Можно добавить свои стили для кнопок -->
+    <style name="MyButton" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">8dp</item> <!-- Скругление углов -->
+        <item name="android:textAllCaps">false</item> <!-- НЕ ЗАГЛАВНЫМИ буквами -->
+        <item name="android:textSize">16sp</item>
+    </style>
 </resources>
