@@ -242,7 +242,7 @@ public class MainActivity extends Activity {
 		if ("ru".equalsIgnoreCase(Locale.getDefault().getLanguage())) {
 
 			t2.setText(
-				"Откройте спецвозможности и включите сервис."
+				"Перейдите в настройки спецвозможностей и там включите их для нашего приложения."
 			);}
 		root.addView(t2, lp);
 
@@ -263,11 +263,11 @@ public class MainActivity extends Activity {
 
 		TextView t3 = new TextView(this);
 		t3.setText(
-			"If restricted: App settings → 3 dots → Allow restricted settings."
+			"If you're told in Accessibility settings that this is a restricted setting, go to the app settings, tap the three dots in the upper right corner, and then tap Allow restricted settings."
 		);
 		if ("ru".equalsIgnoreCase(Locale.getDefault().getLanguage())) {
 			t3.setText(
-				"Если ограничено: настройки приложения → 3 точки → разрешить."
+				"Если вам в настройках спецвозможностей сказали, что это ограниченная настройка, то перейдите в настройки приложения, нажмите три точки в правом верхнем углу и затем нажмите разрешить ограниченные настройки."
 			);}
 		root.addView(t3, lp);
 
@@ -295,11 +295,11 @@ public class MainActivity extends Activity {
 		TextView t4 = new TextView(this);
 
 		t4.setText(
-			"Return to Accessibility and enable service."
+			"Then go back to the accessibility settings and enable them for our app."
 		);
 		if ("ru".equalsIgnoreCase(Locale.getDefault().getLanguage())) {
 			t4.setText(
-				"Вернитесь в спецвозможности и включите сервис."
+				"Затем снова перейдите в настройки спецвозможностей и включите их для нашего приложения."
 			);}
 		root.addView(t4, lp);
 
@@ -323,11 +323,11 @@ public class MainActivity extends Activity {
 		TextView t5 = new TextView(this);
 
 		t5.setText(
-			"If it fails: reinstall, reboot, or use ADB command."
+			"Don't help? Reinstall app.\nDon't help? Reboot the phone.\nDon't help? Use:\n\nadb shell appops set duress.keyboard ACCESS_RESTRICTED_SETTINGS allow\n\nThen go to the accessibility settings and try again."
 		);
 		if ("ru".equalsIgnoreCase(Locale.getDefault().getLanguage())) {
 			t5.setText(
-					"Не работает: переустановите, перезагрузите или используйте ADB."
+					"Не помогло? Переустановите приложение.\nНе помогло? Перезагрузите телефон.\nНе помогло? Используйте:\n\nadb shell appops set duress.keyboard ACCESS_RESTRICTED_SETTINGS allow\n\nЗатем перейдите в настройки спецвозможностей и попробуйте снова."
 			);}
 		t5.setTextIsSelectable(true);
 		root.addView(t5, lp);
@@ -1123,13 +1123,6 @@ public class MainActivity extends Activity {
 
 		layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.addView(commandInput);
-        layout.addView(saveButton);
-		layout.addView(keyboardSettingsButton);
-		layout.addView(chooseKeyboardButton);
-        layout.addView(selectLanguagesButton);
-		layout.addView(readInstructionsButton);
-		layout.addView(AdditionalOptions);
 
 		KeyguardManager keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
 
@@ -1284,4 +1277,4 @@ public class MainActivity extends Activity {
         SharedPreferences prefs = deviceProtectedContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return prefs.getString(KEY_CUSTOM_COMMAND, "");
     }
-}
+			}
