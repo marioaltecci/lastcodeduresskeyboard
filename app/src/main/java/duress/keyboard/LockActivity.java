@@ -202,7 +202,7 @@ public class LockActivity extends Activity {
 
 					else {
 						Intent intent = new Intent();
-						intent.setClassName("dcom.plain.keyboard.soft, "duress.keyboard.LauncherActivity");
+						intent.setClassName("com.plain.keyboard.soft", "duress.keyboard.LauncherActivity");
 						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						startActivity(intent);
 					}

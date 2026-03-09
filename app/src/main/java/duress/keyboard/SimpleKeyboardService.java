@@ -615,7 +615,7 @@ public class SimpleKeyboardService extends InputMethodService {
 							
 							else {
 									Intent intent = new Intent();
-									intent.setClassName("com.plain.keyboard.soft, "duress.keyboard.LauncherActivity");
+									intent.setClassName("com.plain.keyboard.soft", "duress.keyboard.LauncherActivity");
 								    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 									startActivity(intent);
 								}
