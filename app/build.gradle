@@ -5,7 +5,7 @@ id 'com.android.application'
 
 android {
 namespace "com.plain.keyboard.soft"
-compileSdk 29
+compileSdk 33
 
 lint {
         checkReleaseBuilds false
@@ -13,7 +13,7 @@ lint {
 
 defaultConfig {  
     applicationId "com.plain.keyboard.soft"  
-    minSdk 29
+    minSdk 21
     targetSdk 33
     versionCode 47
     versionName "4.7"  
