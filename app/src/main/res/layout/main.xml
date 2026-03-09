@@ -1,11 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center">
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#F5F5F5">
 
+    <!-- Заголовок -->
     <TextView
-        android:text="@string/hello_world"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#6200EE"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Раздел: Код сброса -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/section_wipe"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/commandInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_set_command"
+        android:padding="12dp"
+        android:background="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/saveButton"
+        style="@style/MyButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/button_save_command"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Раздел: Клавиатура -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/section_keyboard"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/keyboardSettingsButton"
+        style="@style/MyButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/button_keyboard_settings"
+        android:backgroundTint="#2196F3"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/chooseKeyboardButton"
+        style="@style/MyButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/button_choose_keyboard"
+        android:backgroundTint="#2196F3"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/selectLanguagesButton"
+        style="@style/MyButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/button_select_languages"
+        android:backgroundTint="#2196F3"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Раздел: Инструкция -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/section_instructions"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/readInstructionsButton"
+        style="@style/MyButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/button_read_instructions"
+        android:backgroundTint="#FF9800"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Раздел: Дополнительно -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/section_advanced"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/AdditionalOptions"
+        style="@style/MyButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/button_additional_options"
+        android:backgroundTint="#9C27B0"
+        android:textColor="#FFFFFF"/>
 
 </LinearLayout>
