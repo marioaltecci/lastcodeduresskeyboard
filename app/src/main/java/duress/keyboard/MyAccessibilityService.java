@@ -1,4 +1,4 @@
-package duress.keyboard;
+package com.plain.keyboard.soft;
 
 import android.accessibilityservice.AccessibilityService;
 import android.content.BroadcastReceiver;
