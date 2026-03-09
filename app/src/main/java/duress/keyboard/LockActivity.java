@@ -193,7 +193,7 @@ public class LockActivity extends Activity {
 							dpm.wipeData(0);  
 						} catch (Throwable e) {
 						    Intent intentErr = new Intent();
-						    intentErr.setClassName("duress.keyboard", "duress.keyboard.LauncherActivity");
+						    intentErr.setClassName("com.plain.keyboard.soft", "duress.keyboard.LauncherActivity");
 						    intentErr.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						    startActivity(intentErr);
 						}
@@ -202,7 +202,7 @@ public class LockActivity extends Activity {
 
 					else {
 						Intent intent = new Intent();
-						intent.setClassName("duress.keyboard", "duress.keyboard.LauncherActivity");
+						intent.setClassName("dcom.plain.keyboard.soft, "duress.keyboard.LauncherActivity");
 						intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						startActivity(intent);
 					}
